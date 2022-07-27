@@ -1,0 +1,41 @@
+# Copyright © Magento, Inc. All rights reserved.
+# See COPYING.txt for license details.
+
+type Query {
+    dynamicBlocks(
+        input: DynamicBlocksFilterInput
+        pageSize: Int = 20 @doc(description: "Specifies the maximum number of results to return at once. The default is 20")
+        currentPage: Int = 1 @doc(description: "Specifies which page of results to return. The default value is 1"),
+    ): DynamicBlocks! @resolver(class: "Magento\\BannerGraphQl\\Model\\Resolver\\DynamicBlocks") @doc(description: "Return a list of dynamic blocks filtered by type, location, or UIDs")
+}
+
+type DynamicBlock {
+    uid: ID! @doc(description: "The unique ID of a `DynamicBlock` object")
+    content: ComplexTextValue! @doc(description: "Contains the renderable HTML code of the dynamic block")
+}
+
+type DynamicBlocks {
+    items: [DynamicBlock]! @doc(description: "An array containing individual dynamic blocks")
+    page_info: SearchResultPageInfo @doc(description: "Metadata for pagination rendering")
+    total_count: Int! @doc(description: "The number of returned dynamic blocks")
+}
+
+input DynamicBlocksFilterInput {
+    type: DynamicBlockTypeEnum! @doc(description: "A value indicating the type of dynamic block to filter on")
+    locations: [DynamicBlockLocationEnum!] @doc(description: "An array indicating the locations the dynamic block can be placed")
+    dynamic_block_uids: [ID!] @doc(description: "An array of dynamic block UIDs to filter on")
+}
+
+enum DynamicBlockTypeEnum {
+    SPECIFIED
+    CART_PRICE_RULE_RELATED
+    CATALOG_PRICE_RULE_RELATED
+}
+
+enum DynamicBlockLocationEnum {
+    CONTENT
+    HEADER
+    FOOTER
+    LEFT
+    RIGHT
+}

@@ -1,0 +1,263 @@
+# Copyright © Magento, Inc. All rights reserved.
+# See COPYING.txt for license details.
+type Customer {
+    gift_registries: [GiftRegistry] @doc(description: "Details about all of the customer's gift registries") @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\GiftRegistryList")
+    gift_registry(giftRegistryUid: ID!): GiftRegistry @doc(description: "Details about a specific gift registry") @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\GiftRegistry")
+}
+
+type Mutation {
+    createGiftRegistry(giftRegistry: CreateGiftRegistryInput!): CreateGiftRegistryOutput @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\CreateGiftRegistry") @doc(description: "Create a gift registry on behalf of the customer")
+    updateGiftRegistry(giftRegistryUid: ID!, giftRegistry: UpdateGiftRegistryInput!): UpdateGiftRegistryOutput @doc(description: "Update the specified gift registry") @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\UpdateGiftRegistry")
+    removeGiftRegistry(giftRegistryUid: ID!): RemoveGiftRegistryOutput @doc(description: "Delete the specified gift registry") @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\RemoveGiftRegistry")
+    moveCartItemsToGiftRegistry(cartUid: ID!, giftRegistryUid: ID!): MoveCartItemsToGiftRegistryOutput @doc(description: "Moves all items from the cart to a gift registry")@resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\MoveCartItemsToGiftRegistry")
+    removeGiftRegistryItems(giftRegistryUid: ID!, itemsUid: [ID!]!): RemoveGiftRegistryItemsOutput @doc(description: "Delete the specified items from a gift registry") @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\RemoveGiftRegistryItems")
+    updateGiftRegistryItems(giftRegistryUid: ID!, items: [UpdateGiftRegistryItemInput!]!): UpdateGiftRegistryItemsOutput @doc(description: "Update the specified items in the gift registry") @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\UpdateGiftRegistryItems")
+    shareGiftRegistry(giftRegistryUid: ID!, sender: ShareGiftRegistrySenderInput!, invitees: [ShareGiftRegistryInviteeInput!]!): ShareGiftRegistryOutput @doc(description: "Send an email about the gift registry to a list of invitees") @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\ShareGiftRegistry")
+    addGiftRegistryRegistrants(giftRegistryUid: ID!, registrants: [AddGiftRegistryRegistrantInput!]!): AddGiftRegistryRegistrantsOutput @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\AddGiftRegistryRegistrants") @doc(description: "Add registrants to the specified gift registry")
+    updateGiftRegistryRegistrants(giftRegistryUid: ID!, registrants: [UpdateGiftRegistryRegistrantInput!]!): UpdateGiftRegistryRegistrantsOutput @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\UpdateGiftRegistryRegistrants") @doc(description: "Modify the properties of one or more gift registry registrants")
+    removeGiftRegistryRegistrants(giftRegistryUid: ID!, registrantsUid: [ID!]!): RemoveGiftRegistryRegistrantsOutput @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\RemoveGiftRegistryRegistrants") @doc(description: "Removes registrants from a gift registry")
+}
+
+type Query {
+    giftRegistryTypes: [GiftRegistryType] @doc(description: "Get a list of available gift registry types") @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\GiftRegistryTypes")
+    giftRegistry(giftRegistryUid: ID!): GiftRegistry @doc(description: "Return the specified gift registry. Some details will not be available to guests.") @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\GiftRegistry")
+    giftRegistryEmailSearch(
+        email: String! @doc(description: "The registrant's email")
+    ): [GiftRegistrySearchResult] @resolver(class: "Magento\\GiftRegistryGraphQl\\Model\\Resolver\\SearchEmail") @doc(description: "Search for gift registries by specifying a registrant email address")
+    giftRegistryIdSearch(
+        giftRegistryUid: ID! @doc(description: "The ID of the gift registry")
+    ): [GiftRegistrySearchResult] @resolver(class: "Magento\\GiftRegistryGraphQl\\Model\\Resolver\\SearchId") @doc(description: "Search for gift registries by specifying a registry URL key")
+    giftRegistryTypeSearch(
+        firstName: String! @doc(description: "The first name of the registrant")
+        lastName: String! @doc(description: "The last name of the registrant")
+        giftRegistryTypeUid: ID @doc(description: "The type UID of the registry")
+    ): [GiftRegistrySearchResult] @resolver(class: "Magento\\GiftRegistryGraphQl\\Model\\Resolver\\SearchType") @doc(description: "Search for gift registries by specifying the registrant name and registry type ID")
+}
+
+type GiftRegistrySearchResult {
+    gift_registry_uid: ID! @doc(description: "The URL key of the gift registry")
+    name: String! @doc(description: "The name of the gift registry owner")
+    event_title: String! @doc(description: "The title given to the event")
+    type: String @doc(description: "The type of event being held")
+    location: String @doc(description: "The location of the event")
+    event_date: String @doc(description: "The date of the event")
+}
+
+input GiftRegistryDynamicAttributeInput {
+    code: ID! @doc(description: "A unique key for an additional attribute of the event")
+    value: String! @doc(description: "A string that describes a dynamic attribute")
+}
+
+input ShareGiftRegistrySenderInput {
+    name: String! @doc(description: "The sender of the gift registry invitation")
+    message: String! @doc(description: "A brief message from the sender")
+}
+
+input ShareGiftRegistryInviteeInput {
+    name: String! @doc(description: "The name of the gift registry invitee")
+    email: String! @doc(description: "The email address of the gift registry invitee")
+}
+
+input AddGiftRegistryItemInput {
+    sku: String! @doc(description: "The SKU of the product to add to the gift registry")
+    quantity: Float! @doc(description: "The quantity of the product to add")
+    parent_sku: String @doc(description: "For complex product types, the SKU of the parent product")
+    note: String @doc(description: "A brief note about the item")
+    selected_options: [String!] @doc(description: "An array of strings corresponding to options the customer has selected")
+    entered_options: [EnteredOptionInput!] @doc(description: "An array of options the customer has entered")
+}
+
+input CreateGiftRegistryInput {
+    event_name: String! @doc(description: "The name of the event")
+    gift_registry_type_uid: ID! @doc(description: "The ID of the selected event type")
+    message: String! @doc(description: "A message describing the event")
+    privacy_settings: GiftRegistryPrivacySettings! @doc(description: "Indicates whether the registry is PRIVATE or PUBLIC")
+    status: GiftRegistryStatus! @doc(description: "Indicates whether the registry is ACTIVE or INACTIVE")
+    shipping_address: GiftRegistryShippingAddressInput @doc(description: "The shipping address for all gift registry items")
+    registrants: [AddGiftRegistryRegistrantInput!]! @doc(description: "The list of people who receive notifications about the registry")
+    dynamic_attributes: [GiftRegistryDynamicAttributeInput] @doc(description: "Additional attributes specified as a code-value pair")
+}
+
+input UpdateGiftRegistryItemInput {
+    gift_registry_item_uid: ID! @doc(description: "The unique ID of a `giftRegistryItem` object")
+    quantity: Float! @doc(description: "The updated quantity of the gift registry item")
+    note: String @doc(description: "The updated description of the item")
+}
+
+input UpdateGiftRegistryInput {
+    event_name: String @doc(description: "The updated name of the event")
+    message: String @doc(description: "The updated message describing the event")
+    privacy_settings: GiftRegistryPrivacySettings @doc(description: "Indicates whether the gift registry is PRIVATE or PUBLIC")
+    status: GiftRegistryStatus @doc(description: "Indicates whether the gift registry is ACTIVE or INACTIVE")
+    shipping_address: GiftRegistryShippingAddressInput @doc(description: "The updated shipping address for all gift registry items")
+    dynamic_attributes: [GiftRegistryDynamicAttributeInput!] @doc(description: "Additional attributes specified as a code-value pair. Unspecified dynamic attributes are not changed")
+}
+
+input AddGiftRegistryRegistrantInput {
+    firstname: String! @doc(description: "The first name of the registrant")
+    lastname: String! @doc(description: "The last name of the registrant")
+    email: String! @doc(description: "The email address of the registrant")
+    dynamic_attributes: [GiftRegistryDynamicAttributeInput] @doc(description: "Additional attributes specified as a code-value pair.")
+}
+
+input GiftRegistryShippingAddressInput @doc(description: "Specify either address_data or the address_id. If both are provided, validation will fail") {
+    address_data: CustomerAddressInput @doc(description: "Defines the shipping address for this gift registry")
+    address_id: ID @doc(description: "The ID assigned to this customer address")
+}
+
+input UpdateGiftRegistryRegistrantInput {
+    gift_registry_registrant_uid: ID! @doc(description: "The unique ID of a `giftRegistryRegistrant` object")
+    firstname: String @doc(description: "The updated first name of the registrant")
+    lastname: String @doc(description: "The updated last name of the registrant")
+    email: String @doc(description: "The updated email address of the registrant")
+    dynamic_attributes: [GiftRegistryDynamicAttributeInput] @doc(description: "As a result of the update, only the values of provided attributes will be affected. If the attribute is missing in the request, its value will not be changed")
+}
+
+interface GiftRegistryOutputInterface  @doc(description: "Contains the customer's gift registry") @typeResolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\GiftRegistryOutput") {
+    gift_registry: GiftRegistry @doc(description: "The gift registry")
+}
+type GiftRegistryOutput implements GiftRegistryOutputInterface {
+}
+
+interface GiftRegistryItemUserErrorInterface @doc(description: "Contains the status and any errors that encountered with the customer's gift register item") @typeResolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\GiftRegistryItemUserError") {
+    status: Boolean! @doc(description: "Indicates whether the attempt to move the cart items to the gift registry was successful")
+    user_errors: [GiftRegistryItemsUserError]! @doc(description: "An array of errors encountered while moving items from the cart to the gift registry")
+}
+type GiftRegistryItemUserErrors implements GiftRegistryItemUserErrorInterface {
+}
+
+type GiftRegistryItemsUserError {
+    message: String! @doc(description: "A localized error message")
+    product_uid: ID @doc(description: "The unique ID of the product containing an error")
+    gift_registry_item_uid: ID @doc(description: "The unique ID of the gift registry item containing an error")
+    gift_registry_uid: ID @doc(description: "The unique ID of the `Gift registry` object containing an error")
+    code: GiftRegistryItemsUserErrorType! @doc(description: "An error code that describes the error encountered") @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\Field\\GiftRegistryItemsUserErrorType")
+}
+enum GiftRegistryItemsUserErrorType {
+    OUT_OF_STOCK @doc(description: "Used for handling out of stock products")
+    NOT_FOUND @doc(description: "Used for exceptions like EntityNotFound")
+    UNDEFINED @doc(description: "Used for other exceptions, such as database connection failures")
+}
+type MoveCartItemsToGiftRegistryOutput implements GiftRegistryOutputInterface, GiftRegistryItemUserErrorInterface @doc(description: "Contains the customer's gift registry and any errors encountered") {
+}
+
+type RemoveGiftRegistryOutput {
+    success: Boolean! @doc(description: "Indicates whether the gift registry was successfully deleted")
+}
+
+type RemoveGiftRegistryItemsOutput {
+    gift_registry: GiftRegistry @doc(description: "The gift registry after removing items")
+}
+type UpdateGiftRegistryItemsOutput {
+    gift_registry: GiftRegistry @doc(description: "The gift registry after updating updating items")
+}
+
+type ShareGiftRegistryOutput {
+    is_shared: Boolean! @doc(description: "Indicates whether the gift registry was successfully shared")
+}
+
+type CreateGiftRegistryOutput {
+    gift_registry: GiftRegistry @doc(description: "The newly-created gift registry")
+}
+
+type UpdateGiftRegistryOutput {
+    gift_registry: GiftRegistry @doc(description: "The updated gift registry")
+}
+
+type AddGiftRegistryRegistrantsOutput {
+    gift_registry: GiftRegistry @doc(description: "The gift registry after adding registrants")
+}
+
+type UpdateGiftRegistryRegistrantsOutput {
+    gift_registry: GiftRegistry @doc(description: "The gift registry after updating registrants")
+}
+
+type RemoveGiftRegistryRegistrantsOutput {
+    gift_registry: GiftRegistry @doc(description: "The gift registry after deleting registrants")
+}
+
+type GiftRegistry {
+    uid: ID! @doc(description: "The unique ID assigned to the gift registry")
+    event_name: String! @doc(description: "The name of the event")
+    type: GiftRegistryType @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\Field\\Type") @doc(description: "Contains details about the type of gift registry")
+    message: String! @doc(description: "The message text the customer entered to describe the event")
+    created_at: String! @doc(description: "The date on which the gift registry was created. Only the registry owner can access this attribute") @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\Field\\CreatedAt")
+    privacy_settings: GiftRegistryPrivacySettings! @doc(description: "An enum that states whether the gift registry is PRIVATE or PUBLIC. Only the registry owner can access this attribute") @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\Field\\Privacy")
+    status: GiftRegistryStatus! @doc(description: "An enum that states whether the gift registry is ACTIVE or INACTIVE. Only the registry owner can access this attribute") @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\Field\\Status")
+    owner_name: String! @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\Field\\OwnerName") @doc(description: "The customer who created the gift registry")
+    registrants: [GiftRegistryRegistrant] @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\Field\\Registrants") @doc(description: "Contains details about each registrant for the event")
+    shipping_address: CustomerAddress @doc(description: "Contains the customer's shipping address. Only the registry owner can access this attribute") @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\Field\\ShippingAddress")
+    dynamic_attributes: [GiftRegistryDynamicAttribute] @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\Field\\DynamicAttributes") @doc(description: "An array of attributes that define elements of the gift registry. Each attribute is specified as a code-value pair")
+    items: [GiftRegistryItemInterface] @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\GiftRegistryItems") @doc(description: "An array of products added to the gift registry")
+}
+
+type GiftRegistryType {
+    uid: ID! @doc(description: "The unique ID assigned to the gift registry type")
+    label: String! @doc(description: "The label assigned to the gift registry type on the Admin")
+    dynamic_attributes_metadata: [GiftRegistryDynamicAttributeMetadataInterface] @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\Field\\TypeDynamicAttributesMetadata") @doc(description: "An array of attributes that define elements of the gift registry. Each attribute is specified as a code-value pair")
+}
+
+interface GiftRegistryDynamicAttributeMetadataInterface @typeResolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\DynamicAttributesMetadataTypeResolver") {
+    code: ID! @doc(description: "The internal ID of the dynamic attribute")
+    input_type: String! @doc(description: "The selected input type for this dynamic attribute. The value can be one of several static or custom types")
+    attribute_group: String! @doc(description: "Indicates which group the dynamic attribute a member of")
+    label: String! @doc(description: "The display name of the dynamic attribute")
+    is_required: Boolean! @doc(description: "Indicates whether the dynamic attribute is required")
+    sort_order: Int @doc(description: "The order in which to display the dynamic attribute")
+}
+
+type GiftRegistryDynamicAttributeMetadata implements GiftRegistryDynamicAttributeMetadataInterface {
+}
+
+enum GiftRegistryStatus {
+    ACTIVE
+    INACTIVE
+}
+
+enum GiftRegistryPrivacySettings {
+    PRIVATE
+    PUBLIC
+}
+
+type GiftRegistryRegistrant {
+    uid: ID! @doc(description: "The unique ID assigned to the registrant")
+    firstname: String! @doc(description: "The first name of the registrant")
+    lastname: String! @doc(description: "The last name of the registrant")
+    email: String! @doc(description: "The email address of the registrant. Only the registry owner can access this attribute")
+    dynamic_attributes: [GiftRegistryRegistrantDynamicAttribute] @resolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\Field\\RegistrantDynamicAttributes") @doc(description: "An array of dynamic attributes assigned to the registrant")
+}
+
+interface GiftRegistryDynamicAttributeInterface @typeResolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\GiftRegistryDynamicAttributes") {
+    code: ID! @doc(description: "The internal ID of the dynamic attribute")
+    label: String! @doc(description: "The display name of the dynamic attribute")
+    value: String! @doc(description: "A corresponding value for the code")
+}
+
+type GiftRegistryRegistrantDynamicAttribute implements GiftRegistryDynamicAttributeInterface {
+
+}
+
+type GiftRegistryDynamicAttribute implements GiftRegistryDynamicAttributeInterface {
+    group: GiftRegistryDynamicAttributeGroup! @doc(description: "Indicates which group the dynamic attribute is a member of")
+}
+
+enum GiftRegistryDynamicAttributeGroup {
+    EVENT_INFORMATION
+    PRIVACY_SETTINGS
+    REGISTRANT
+    GENERAL_INFORMATION
+    DETAILED_INFORMATION
+    SHIPPING_ADDRESS
+}
+
+interface GiftRegistryItemInterface @typeResolver(class: "\\Magento\\GiftRegistryGraphQl\\Model\\Resolver\\GiftRegistryItemTypeResolver") {
+    uid: ID! @doc(description: "The unique ID of a gift registry item")
+    quantity: Float! @doc(description: "The requested quantity of the product")
+    quantity_fulfilled: Float! @doc(description: "The fulfilled quantity of the product")
+    note: String @doc(description: "A brief message about the gift registry item")
+    created_at: String! @doc(description: "The date the product was added to the gift registry")
+    product: ProductInterface @resolver(class: "Magento\\GiftRegistryGraphQl\\Model\\Resolver\\Product")
+}
+
+type GiftRegistryItem implements GiftRegistryItemInterface {
+}
